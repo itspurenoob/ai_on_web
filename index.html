@@ -20,7 +20,7 @@ let aicanvas; // AI's 28x28 canvas
 let displayCanvas; // Scaled-up display canvas
 
 async function loadModel() {
-    model = await tf.loadGraphModel('/model.json'); // Load the model
+    model = await tf.loadGraphModel('model.json'); // Load the model
     console.log("Model Loaded!");
 }
 // Runs prediction
