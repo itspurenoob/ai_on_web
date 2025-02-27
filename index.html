@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <title>Handwritten Digit Recognition</title>
+</head>
+<body>
+    <h1>Draw a digit and let AI predict it!</h1>
+    <p id="result">Prediction: </p>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+
+    <script>
+
+
+
+let model;
+let aicanvas; // AI's 28x28 canvas
+let displayCanvas; // Scaled-up display canvas
+
+async function loadModel() {
+    model = await tf.loadGraphModel('/model.json'); // Load the model
+    console.log("Model Loaded!");
+}
+// Runs prediction
+async function predict() {
+    let inputTensor = tf.browser.fromPixels(aicanvas.canvas, 1) // Convert p5 canvas to tensor
+        .toFloat()
+        .mean(2) // Convert to grayscale
+        .expandDims(0); // Match model input shape
+
+    let prediction = model.predict(inputTensor);
+    let predictedClass = prediction.argMax(1).dataSync()[0];
+
+    document.getElementById('result').innerText = "Prediction: " + predictedClass;
+}
+
+function mouseReleased() {
+    showWhatAISees(); // Show AI vision when drawing stops
+}
+
+loadModel(); // Load the AI model
+
+function setup() {
+    createCanvas(280, 280); // Main drawing canvas
+    background(0);
+
+    // Ensure these are initialized before use
+    aicanvas = createGraphics(28, 28);
+    displayCanvas = createGraphics(280, 280,"displaycanvas");
+}
+function draw() {
+    if (mouseIsPressed) {
+        stroke(0);
+        strokeWeight(0);
+        circle(mouseX, mouseY,20);
+    }
+}
+
+function showWhatAISees() {
+    if (!aicanvas || !displayCanvas) {
+        console.error("aicanvas or displayCanvas is not initialized!");
+        return;
+    }
+
+    // Copy drawing to AI canvas
+    aicanvas.clear(); // Clear previous
+    aicanvas.image(get(), 0, 0, 28, 28);
+
+    // Scale up for visibility
+    displayCanvas.clear();
+    displayCanvas.image(aicanvas, 0, 0, 140, 140);
+
+    // Draw scaled-up AI vision on the main canvas
+    image(displayCanvas, width + 20, 0);
+}
+
+function mouseReleased() {
+    showWhatAISees();
+    predict();
+    document.querySelectorAll("canvas")[2].style = "display:show;"
+}
+
+function keyPressed() {
+  if (key === 'c') {
+    // Code to run.
+    background(0)
+  }
+}
+
+
+// Converts the drawing to 28x28 and shows it
+function showWhatAISees() {
+    // Copy drawing to AI canvas
+    aicanvas.clear();
+    aicanvas.image(get(), 0, 0, 28, 28);
+
+    // Scale up for better visibility
+    displayCanvas.clear();
+    displayCanvas.image(aicanvas, 0, 0, 140, 140);
+}
+
+
+    </script>
+</body>
+</html>
